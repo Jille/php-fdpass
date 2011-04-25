@@ -71,49 +71,6 @@ zend_module_entry fdpass_module_entry = {
 ZEND_GET_MODULE(fdpass)
 #endif
 
-
-/* {{{ PHP_MINIT_FUNCTION */
-PHP_MINIT_FUNCTION(fdpass)
-{
-
-	/* add your stuff here */
-
-	return SUCCESS;
-}
-/* }}} */
-
-
-/* {{{ PHP_MSHUTDOWN_FUNCTION */
-PHP_MSHUTDOWN_FUNCTION(fdpass)
-{
-
-	/* add your stuff here */
-
-	return SUCCESS;
-}
-/* }}} */
-
-
-/* {{{ PHP_RINIT_FUNCTION */
-PHP_RINIT_FUNCTION(fdpass)
-{
-	/* add your stuff here */
-
-	return SUCCESS;
-}
-/* }}} */
-
-
-/* {{{ PHP_RSHUTDOWN_FUNCTION */
-PHP_RSHUTDOWN_FUNCTION(fdpass)
-{
-	/* add your stuff here */
-
-	return SUCCESS;
-}
-/* }}} */
-
-
 /* {{{ PHP_MINFO_FUNCTION */
 PHP_MINFO_FUNCTION(fdpass)
 {
@@ -121,11 +78,9 @@ PHP_MINFO_FUNCTION(fdpass)
 	php_info_print_table_start();
 	php_info_print_table_row(2, "Version",PHP_FDPASS_VERSION " (alpha)");
 	php_info_print_table_row(2, "Released", "2011-04-24");
-	php_info_print_table_row(2, "CVS Revision", "$Id: $");
+	// php_info_print_table_row(2, "CVS Revision", "$Id: $");
 	php_info_print_table_row(2, "Authors", "Jille Timmermans 'jille@quis.cx' (lead)\n");
 	php_info_print_table_end();
-	/* add your stuff here */
-
 }
 /* }}} */
 
@@ -140,9 +95,8 @@ PHP_FUNCTION(fdpass_send)
 	php_stream *transferfd_stream = NULL;
 	const char *data = NULL;
 	int data_len = 0;
-	int localfd, transferfd;
-	int ret;
 
+	int ret, localfd, transferfd;
 	struct msghdr hdr;
 	struct iovec iov_data;
 	struct cmsghdr *cmsg;
@@ -154,7 +108,6 @@ PHP_FUNCTION(fdpass_send)
 	php_stream_from_zval(localfd_stream, &localfd_zval);
 	php_stream_from_zval(transferfd_stream, &transferfd_zval);
 
-	printf("Socket type: %s\n", localfd_stream->ops->label);
 	if(strcmp(localfd_stream->ops->label, "generic_socket") != 0 && strcmp(localfd_stream->ops->label, "tcp_socket") != 0 && strcmp(localfd_stream->ops->label, "udp_socket") != 0 && strcmp(localfd_stream->ops->label, "unix_socket") != 0 && strcmp(localfd_stream->ops->label, "udg_socket") != 0) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "socket type '%s' not supported", localfd_stream->ops->label);
 		RETURN_FALSE;
@@ -202,8 +155,8 @@ PHP_FUNCTION(fdpass_recv)
 	zval *outstream_zval = NULL;
 	php_stream *localfd_stream = NULL;
 	long len = 512;
-	int localfd, ret;
 
+	int localfd, ret;
 	struct msghdr hdr;
 	struct iovec iov_data;
 	struct cmsghdr *cmsg;
@@ -214,15 +167,15 @@ PHP_FUNCTION(fdpass_recv)
 	}
 	php_stream_from_zval(localfd_stream, &localfd_zval);
 
-	printf("Socket type: %s\n", localfd_stream->ops->label);
 	if(strcmp(localfd_stream->ops->label, "generic_socket") != 0 && strcmp(localfd_stream->ops->label, "tcp_socket") != 0 && strcmp(localfd_stream->ops->label, "udp_socket") != 0 && strcmp(localfd_stream->ops->label, "unix_socket") != 0 && strcmp(localfd_stream->ops->label, "udg_socket") != 0) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "socket type '%s' not supported", localfd_stream->ops->label);
 		RETURN_FALSE;
 	}
 
 	localfd = ((php_netstream_data_t *)localfd_stream->abstract)->socket;
-	printf("fd: accept on %d\n", localfd);
 
+	memset(&hdr, 0, sizeof(hdr));
+	memset(&iov_data, 0, sizeof(iov_data));
 	memset(cmsg_buf, 0, sizeof(cmsg_buf));
 
 	iov_data.iov_base = emalloc(len);
@@ -234,41 +187,27 @@ PHP_FUNCTION(fdpass_recv)
 	hdr.msg_flags = 0;
 	hdr.msg_control = cmsg_buf;
 	hdr.msg_controllen = sizeof(cmsg_buf);
-/*
-	cmsg = CMSG_FIRSTHDR(&hdr);
-	cmsg->cmsg_len = hdr.msg_controllen;
-	cmsg->cmsg_level = SOL_SOCKET;
-	cmsg->cmsg_type = SCM_RIGHTS;
-	((int *)CMSG_DATA(cmsg))[0] = -1;
-*/
-
-	memset(cmsg_buf, 0, sizeof(cmsg_buf));
 
 	ret = recvmsg(localfd, &hdr, 0);
 
 	if(ret == -1) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "recvmsg() failed: %s", strerror(errno));
-		// efree(iov_data.iov_base);
+		efree(iov_data.iov_base);
 		RETURN_FALSE;
 	}
 
 	cmsg = CMSG_FIRSTHDR(&hdr);
 	if(cmsg->cmsg_type == SCM_RIGHTS) {
-		// int nfds = (cmsg->cmsg_len - sizeof(struct cmsghdr)) / sizeof(int);
 		int *fdp = (int *)CMSG_DATA(cmsg);
 		int nfds = ((caddr_t)cmsg + cmsg->cmsg_len - (caddr_t)fdp) / sizeof(int);
-
-		printf("nfds: %d\n", nfds);
 
 		if(nfds > 0) {
 			int fd = ((int *)CMSG_DATA(cmsg))[0];
 			if(nfds > 1) {
+				// TODO: Close the other descriptors
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Received %d descriptors instead of 1", nfds);
 			}
-			printf("fdpass_recv: Received %d\n", fd);
-			// if(fork() > 0) abort();
 			if(fd >= 0) {
-				write(fd, "I now announce you: the child\n", strlen("I now announce you: the child\n"));
 				php_stream *outstream_stream = php_stream_sock_open_from_socket(fd, 0);
 				php_stream_to_zval(outstream_stream, outstream_zval);
 			} else {
