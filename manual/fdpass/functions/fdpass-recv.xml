@@ -10,12 +10,74 @@
      <methodsynopsis>
       <type>string</type><methodname>fdpass_recv</methodname>
       <methodparam><type>stream</type><parameter>localfd</parameter></methodparam>
-      <methodparam><type>stream</type><parameter>&amp;outstream</parameter></methodparam>
+      <methodparam><type>stream</type><parameter role="reference">outstream</parameter></methodparam>
       <methodparam choice='opt'><type>int</type><parameter>len</parameter></methodparam>
      </methodsynopsis>
      <para>
 This will receive the data and filedescriptor the remote-end has sent over this stream.     </para>
 
+   </refsect1>
+   <refsect1 role="parameters">
+     &reftitle.parameters;
+     <para>
+       <variablelist>
+         <varlistentry>
+           <term><parameter>localfd</parameter></term>
+           <listitem>
+             <para>The stream connected to the other process</para>
+           </listitem>
+         </varlistentry>
+         <varlistentry>
+           <term><parameter>outstream</parameter></term>
+           <listitem>
+             <para>If a stream is received from the remote end, it will be put in this variable</para>
+           </listitem>
+         </varlistentry>
+         <varlistentry>
+           <term><parameter>len</parameter></term>
+           <listitem>
+             <para>The maximum number of bytes of data to read</para>
+           </listitem>
+         </varlistentry>
+       </variablelist>
+     </para>
+   </refsect1>
+   <refsect1 role="returnvalues">
+     &reftitle.returnvalues;
+     <para>
+       Returns FALSE on error and the received data (a string) on success.
+     </para>
+   </refsect1>
+   <refsect1 role="examples">
+     &reftitle.examples;
+     <para>
+       <example>
+         <title><function>fdpass_recv</function> example</title>
+         <programlisting role="php">
+<![CDATA[
+<?php
+$sock = NULL;
+$data = fdpass_recv($localsocket, $sock, 512);
+if($sock) {
+  fwrite($sock, "Hello world!\n");
+}
+echo $data ."\n";
+]]>
+         </programlisting>
+         &example.outputs.similar;
+         <screen>
+Here you are
+         </screen>
+       </example>
+     </para>
+   </refsect1>
+   <refsect1 role="seealso">
+     &reftitle.seealso;
+     <para>
+       <simplelist>
+         <member><function>fdpass_send</function></member>
+       </simplelist>
+     </para>
    </refsect1>
   </refentry>
 

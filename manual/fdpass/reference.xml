@@ -20,7 +20,7 @@
    <section xml:id='fdpass.requirements'>
     &reftitle.required;
     <para>
-     
+     An UNIX-system which supports file descriptorpassing. (eg. Linux, FreeBSD)
     </para>
    </section>
 
