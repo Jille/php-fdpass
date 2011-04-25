@@ -18,4 +18,3 @@ ltmain.sh
 missing
 mkinstalldirs
 run-tests.php
-test.php
