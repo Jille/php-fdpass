@@ -23,20 +23,20 @@ http://pear.php.net/dtd/package-2.0.xsd">
     <active>yes</active>
   </lead>
 
-  <date>2011-04-24</date>
+  <date>2011-04-25</date>
   <version>
     <release>0.1</release>
     <api>0.1</api>
   </version>
   <stability>
-    <release>alpha</release>
-    <api>alpha</api>
+    <release>beta</release>
+    <api>beta</api>
   </stability>
 
   <license filesource="LICENSE">BSD</license>
 
   <notes>
-Started creating this extension
+First working version
   </notes>
 
   <contents>
@@ -50,6 +50,7 @@ Started creating this extension
       <file role='src' name='php_fdpass.h'/>
       <dir name="tests">
         <file role='test' name='fdpass_send.phpt'/>
+        <file role='test' name='fdpass_recv.phpt'/>
       </dir>
     </dir>
   </contents>
@@ -57,7 +58,7 @@ Started creating this extension
   <dependencies>
     <required>
       <php>
-        <min>4.0.0</min>
+        <min>5.0.0</min>
       </php>
       <pearinstaller>
         <min>1.4.0a1</min>

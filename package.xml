@@ -21,15 +21,15 @@
 
   <release>
     <version>0.1</version>
-    <state>alpha</state>
-    <notes>Started creating this extension</notes>
-    <date>2011-04-24</date>
+    <state>beta</state>
+    <notes>First working version</notes>
+    <date>2011-04-25</date>
   </release>
   <changelog>
 
   </changelog>
   <deps>
-    <dep type="php" rel="ge" version="4.0.0"/>
+    <dep type="php" rel="ge" version="5.0.0"/>
   </deps>
 
   <filelist>
@@ -43,6 +43,7 @@
       <file role='src' name='php_fdpass.h'/>
       <dir name="tests">
         <file role='test' name='fdpass_send.phpt'/>
+        <file role='test' name='fdpass_recv.phpt'/>
       </dir>
     </dir>
   </filelist>

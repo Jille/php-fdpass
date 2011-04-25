@@ -72,12 +72,6 @@ extern zend_module_entry fdpass_module_entry;
 #define PHP_FDPASS_API
 #endif
 
-PHP_MINIT_FUNCTION(fdpass);
-PHP_MSHUTDOWN_FUNCTION(fdpass);
-PHP_RINIT_FUNCTION(fdpass);
-PHP_RSHUTDOWN_FUNCTION(fdpass);
-PHP_MINFO_FUNCTION(fdpass);
-
 #ifdef ZTS
 #include "TSRM.h"
 #endif
@@ -97,26 +91,18 @@ PHP_MINFO_FUNCTION(fdpass);
 
 
 PHP_FUNCTION(fdpass_send);
-#if (PHP_MAJOR_VERSION >= 5)
 ZEND_BEGIN_ARG_INFO_EX(fdpass_send_arg_info, ZEND_SEND_BY_VAL, ZEND_RETURN_VALUE, 3)
   ZEND_ARG_INFO(0, localfd)
   ZEND_ARG_INFO(0, transferfd)
   ZEND_ARG_INFO(0, data)
 ZEND_END_ARG_INFO()
-#else /* PHP 4.x */
-#define fdpass_send_arg_info NULL
-#endif
 
 PHP_FUNCTION(fdpass_recv);
-#if (PHP_MAJOR_VERSION >= 5)
 ZEND_BEGIN_ARG_INFO_EX(fdpass_recv_arg_info, ZEND_SEND_BY_VAL, ZEND_RETURN_VALUE, 2)
   ZEND_ARG_INFO(0, localfd)
-  ZEND_ARG_INFO(1, stream)
+  ZEND_ARG_INFO(1, outstream)
   ZEND_ARG_INFO(0, len)
 ZEND_END_ARG_INFO()
-#else /* PHP 4.x */
-#define fdpass_recv_arg_info NULL
-#endif
 
 #ifdef  __cplusplus
 } // extern "C" 

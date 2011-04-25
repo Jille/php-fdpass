@@ -3,4 +3,5 @@
 <!ENTITY reference.fdpass.ini SYSTEM './fdpass/ini.xml'>
 <!ENTITY reference.fdpass.configure SYSTEM './fdpass/configure.xml'>
 <!ENTITY reference.fdpass.functions.fdpass-send SYSTEM './fdpass/functions/fdpass-send.xml'>
+<!ENTITY reference.fdpass.functions.fdpass-recv SYSTEM './fdpass/functions/fdpass-recv.xml'>
 <!ENTITY reference.fdpass.functions SYSTEM './functions.xml'>

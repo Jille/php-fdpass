@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 <!-- $Revision: 1.0 $ -->
-  <refentry id="function.fdpass-send">
+  <refentry id="function.fdpass-recv">
    <refnamediv>
-    <refname>fdpass_send</refname>
-    <refpurpose>Send transferfd over to the remote side of localfd</refpurpose>
+    <refname>fdpass_recv</refname>
+    <refpurpose>Receives the filedescriptor passed by fdpass_send()</refpurpose>
    </refnamediv>
    <refsect1>
     <title>Description</title>
      <methodsynopsis>
-      <type>int</type><methodname>fdpass_send</methodname>
+      <type>string</type><methodname>fdpass_recv</methodname>
       <methodparam><type>stream</type><parameter>localfd</parameter></methodparam>
-      <methodparam><type>stream</type><parameter>transferfd</parameter></methodparam>
-      <methodparam><type>string</type><parameter>data</parameter></methodparam>
+      <methodparam><type>stream</type><parameter>&amp;outstream</parameter></methodparam>
+      <methodparam choice='opt'><type>int</type><parameter>len</parameter></methodparam>
      </methodsynopsis>
      <para>
-This will send transferfd over the AF_UNIX socket localfd which can retreive it by using fdpass_recv(). It can also send some data along with the filedescriptor.     </para>
+This will receive the data and filedescriptor the remote-end has sent over this stream.     </para>
 
    </refsect1>
   </refentry>
