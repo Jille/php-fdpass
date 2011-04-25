@@ -1,0 +1,6 @@
+<!ENTITY reference.fdpass.reference SYSTEM './fdpass/reference.xml'>
+<!ENTITY reference.fdpass.constants SYSTEM './fdpass/constants.xml'>
+<!ENTITY reference.fdpass.ini SYSTEM './fdpass/ini.xml'>
+<!ENTITY reference.fdpass.configure SYSTEM './fdpass/configure.xml'>
+<!ENTITY reference.fdpass.functions.fdpass-send SYSTEM './fdpass/functions/fdpass-send.xml'>
+<!ENTITY reference.fdpass.functions SYSTEM './functions.xml'>

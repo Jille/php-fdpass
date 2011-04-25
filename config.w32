@@ -1,0 +1,8 @@
+// $ Id: $
+// vim:ft=javascript
+
+ARG_ENABLE('fdpass' , 'An extension which provides filedescriptor passing', 'no');
+if (PHP_FDPASS == "yes") {
+  EXTENSION("fdpass", "fdpass.c");
+  AC_DEFINE("HAVE_FDPASS", 1, "fdpass support");
+}

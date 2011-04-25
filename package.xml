@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<!DOCTYPE package SYSTEM "http://pear.php.net/dtd/package-1.0">
+<package>
+
+  <name>fdpass</name>
+  <summary>An extension which provides filedescriptor passing</summary>
+  <description>
+		With fdpass you can pass filedescriptors between UNIX processes over AF_UNIX-sockets.
+  </description>
+
+  <license>BSD</license>
+
+  <maintainers>
+    <maintainer>
+      <user>unknown</user>
+      <name>Jille Timmermans</name>
+      <email>jille@quis.cx</email>
+      <role>lead</role>
+    </maintainer>
+  </maintainers>
+
+  <release>
+    <version>0.1</version>
+    <state>alpha</state>
+    <notes>Started creating this extension</notes>
+    <date>2011-04-24</date>
+  </release>
+  <changelog>
+
+  </changelog>
+  <deps>
+    <dep type="php" rel="ge" version="4.0.0"/>
+  </deps>
+
+  <filelist>
+    <dir name="/">
+      <file role='doc' name='EXPERIMENTAL'/>
+      <file role='doc' name='CREDITS'/>
+      <file role='src' name='config.m4'/>
+      <file role='src' name='fdpass.dsp'/>
+      <file role='src' name='config.w32'/>
+      <file role='src' name='fdpass.c'/>
+      <file role='src' name='php_fdpass.h'/>
+      <dir name="tests">
+        <file role='test' name='fdpass_send.phpt'/>
+      </dir>
+    </dir>
+  </filelist>
+</package>
