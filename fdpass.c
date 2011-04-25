@@ -146,6 +146,7 @@ PHP_FUNCTION(fdpass_send)
 	struct msghdr hdr;
 	struct iovec iov_data;
 	struct cmsghdr *cmsg;
+	char cmsg_buf[CMSG_SPACE(sizeof(int))];
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rrs", &localfd_zval, &transferfd_zval, &data, &data_len) == FAILURE) {
 		return;
@@ -163,6 +164,10 @@ PHP_FUNCTION(fdpass_send)
 	localfd = ((php_netstream_data_t *)localfd_stream->abstract)->socket;
 	printf("fd: pass %d to %d\n", transferfd, localfd);
 
+	memset(&hdr, 0, sizeof(hdr));
+	memset(&iov_data, 0, sizeof(iov_data));
+	memset(cmsg_buf, 0, sizeof(cmsg_buf));
+
 	iov_data.iov_base = (char *)data;
 	iov_data.iov_len = data_len;
 	hdr.msg_name = NULL;
@@ -170,8 +175,8 @@ PHP_FUNCTION(fdpass_send)
 	hdr.msg_iov = &iov_data;
 	hdr.msg_iovlen = 1;
 	hdr.msg_flags = 0;
-	hdr.msg_controllen = sizeof(struct cmsghdr) + sizeof(int);
-	hdr.msg_control = (void *)emalloc(sizeof(struct cmsghdr) + sizeof(int));
+	hdr.msg_control = cmsg_buf;
+	hdr.msg_controllen = CMSG_LEN(sizeof(int));
 	cmsg = CMSG_FIRSTHDR(&hdr);
 	cmsg->cmsg_len = hdr.msg_controllen;
 	cmsg->cmsg_level = SOL_SOCKET;
@@ -180,10 +185,8 @@ PHP_FUNCTION(fdpass_send)
 
 	ret = sendmsg(localfd, &hdr, 0);
 
-	efree(hdr.msg_control);
-
 	if(ret == -1) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "fdpass_send: sendmsg() failed: %s", strerror(errno));
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "sendmsg() failed: %s", strerror(errno));
 		RETURN_FALSE;
 	}
 
@@ -199,11 +202,12 @@ PHP_FUNCTION(fdpass_recv)
 	zval *outstream_zval = NULL;
 	php_stream *localfd_stream = NULL;
 	long len = 512;
-	int localfd, ret, nfds;
+	int localfd, ret;
 
 	struct msghdr hdr;
 	struct iovec iov_data;
 	struct cmsghdr *cmsg;
+	char cmsg_buf[CMSG_SPACE(sizeof(int))];
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rz|l", &localfd_zval, &outstream_zval, &len) == FAILURE) {
 		return;
@@ -219,6 +223,8 @@ PHP_FUNCTION(fdpass_recv)
 	localfd = ((php_netstream_data_t *)localfd_stream->abstract)->socket;
 	printf("fd: accept on %d\n", localfd);
 
+	memset(cmsg_buf, 0, sizeof(cmsg_buf));
+
 	iov_data.iov_base = emalloc(len);
 	iov_data.iov_len = len;
 	hdr.msg_name = NULL;
@@ -226,34 +232,52 @@ PHP_FUNCTION(fdpass_recv)
 	hdr.msg_iov = &iov_data;
 	hdr.msg_iovlen = 1;
 	hdr.msg_flags = 0;
-	hdr.msg_controllen = sizeof(struct cmsghdr) + sizeof(int);
-	hdr.msg_control = (void *)emalloc(sizeof(struct cmsghdr) + sizeof(int));
+	hdr.msg_control = cmsg_buf;
+	hdr.msg_controllen = sizeof(cmsg_buf);
+/*
 	cmsg = CMSG_FIRSTHDR(&hdr);
 	cmsg->cmsg_len = hdr.msg_controllen;
 	cmsg->cmsg_level = SOL_SOCKET;
 	cmsg->cmsg_type = SCM_RIGHTS;
 	((int *)CMSG_DATA(cmsg))[0] = -1;
+*/
+
+	memset(cmsg_buf, 0, sizeof(cmsg_buf));
 
 	ret = recvmsg(localfd, &hdr, 0);
 
 	if(ret == -1) {
-		efree(hdr.msg_control);
-		efree(iov_data.iov_base);
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "fdpass_recv: sendmsg() failed: %s", strerror(errno));
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "recvmsg() failed: %s", strerror(errno));
+		// efree(iov_data.iov_base);
 		RETURN_FALSE;
 	}
 
-	nfds = (cmsg->cmsg_len - sizeof(struct cmsghdr)) / sizeof(int);
+	cmsg = CMSG_FIRSTHDR(&hdr);
+	if(cmsg->cmsg_type == SCM_RIGHTS) {
+		// int nfds = (cmsg->cmsg_len - sizeof(struct cmsghdr)) / sizeof(int);
+		int *fdp = (int *)CMSG_DATA(cmsg);
+		int nfds = ((caddr_t)cmsg + cmsg->cmsg_len - (caddr_t)fdp) / sizeof(int);
 
-	if(nfds == 1) {
-		int fd = ((int *)CMSG_DATA(cmsg))[0];
-		php_stream *outstream_stream = php_stream_sock_open_from_socket(fd, 0);
-		php_stream_to_zval(outstream_stream, outstream_zval);
-	} else if(nfds > 1) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "fdpass_recv: Received %d descriptors instead of 1. This is not supported.", nfds);
+		printf("nfds: %d\n", nfds);
+
+		if(nfds > 0) {
+			int fd = ((int *)CMSG_DATA(cmsg))[0];
+			if(nfds > 1) {
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Received %d descriptors instead of 1", nfds);
+			}
+			printf("fdpass_recv: Received %d\n", fd);
+			// if(fork() > 0) abort();
+			if(fd >= 0) {
+				write(fd, "I now announce you: the child\n", strlen("I now announce you: the child\n"));
+				php_stream *outstream_stream = php_stream_sock_open_from_socket(fd, 0);
+				php_stream_to_zval(outstream_stream, outstream_zval);
+			} else {
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Received invalid filedescriptor");
+			}
+		}
+	} else {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Received control message of unknown type");
 	}
-
-	efree(hdr.msg_control);
 
 	RETURN_STRINGL(iov_data.iov_base, ret, 0);
 }
