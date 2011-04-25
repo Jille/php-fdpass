@@ -20,7 +20,6 @@ configure
 configure.in
 fdpass.la
 fdpass.lo
-fdpass.xml
 install-sh
 libtool
 ltmain.sh

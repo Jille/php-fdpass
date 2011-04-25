@@ -1,0 +1,45 @@
+<?xml version="1.0" ?>
+<!DOCTYPE extension SYSTEM "../extension.dtd"> 
+<extension name="fdpass" version="1.1.3">
+	<summary>An extension which provides filedescriptor passing</summary>
+	<description>
+		With fdpass you can pass filedescriptors between UNIX processes over AF_UNIX-sockets.
+	</description>
+	<maintainers>
+		<maintainer>
+			<!-- <user>jille</user> -->
+			<name>Jille Timmermans</name>
+			<email>jille@quis.cx</email>
+			<role>lead</role>
+		</maintainer>
+	</maintainers>
+	<license>BSD</license>
+	<release>
+		<version>0.1</version>
+		<date>2011-04-25</date>
+		<state>beta</state>
+		<notes>First working version</notes>
+	</release>
+
+<!--
+	<header name="zend.h" prepend="yes" />
+	<header name="php.h" prepend="yes" />
+	<header name="php_network.h" prepend="yes" />
+-->
+
+	<function role="public" name="fdpass_send">
+		<proto>int fdpass_send(stream localfd, stream transferfd, string data)</proto>
+		<summary>Send transferfd over to the remote side of localfd</summary>
+		<description>This will send transferfd over the AF_UNIX socket localfd which can retreive it by using fdpass_recv(). It can also send some data along with the filedescriptor.</description>
+	</function>
+
+	<function role="public" name="fdpass_recv">
+		<proto>
+<![CDATA[
+	string fdpass_recv(stream localfd, stream &outstream [, int len = 512 ])
+]]>
+		</proto>
+		<summary>Receives the filedescriptor passed by fdpass_send()</summary>
+		<description>This will receive the data and filedescriptor the remote-end has sent over this stream.</description>
+	</function>
+</extension>
