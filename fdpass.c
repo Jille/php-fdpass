@@ -113,6 +113,13 @@ PHP_FUNCTION(fdpass_send)
 		RETURN_FALSE;
 	}
 
+/* XXX Dit kan netter; zoals libevent:
+	if (ZEND_FETCH_RESOURCE_NO_RETURN(stream, php_stream *, fd, -1, NULL, php_file_le_stream())) {
+		if (php_stream_cast(stream, PHP_STREAM_AS_FD_FOR_SELECT | PHP_STREAM_CAST_INTERNAL, (void*)&file_desc, 1) != SUCCESS || file_desc < 0) {
+			RETURN_FALSE;
+		}
+	}
+ */
 	transferfd = ((php_netstream_data_t *)transferfd_stream->abstract)->socket;
 	localfd = ((php_netstream_data_t *)localfd_stream->abstract)->socket;
 	printf("fd: pass %d to %d\n", transferfd, localfd);
@@ -172,6 +179,7 @@ PHP_FUNCTION(fdpass_recv)
 		RETURN_FALSE;
 	}
 
+/* XXX Dit kan netter; zie fdpass_send */
 	localfd = ((php_netstream_data_t *)localfd_stream->abstract)->socket;
 
 	memset(&hdr, 0, sizeof(hdr));
